@@ -2,6 +2,8 @@
 name = "serve-wasm"
 version = "0.1.0"
 edition = "2024"
+description = "A simple, lightweight HTTP server for serving WebAssembly applications with the correct security headers."
+license = "MIT"
 
 [dependencies]
 axum = "0.8"
