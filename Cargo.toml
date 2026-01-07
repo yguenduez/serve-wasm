@@ -1,9 +1,10 @@
 [package]
 name = "serve-wasm"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A simple, lightweight HTTP server for serving WebAssembly applications with the correct security headers."
 license = "MIT"
+repository = "https://github.com/yguenduez/serve-wasm"
 
 [dependencies]
 axum = "0.8"
