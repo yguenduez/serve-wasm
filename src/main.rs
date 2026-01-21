@@ -5,6 +5,7 @@
 use axum::{
     Router, body::Body, http::{Request, StatusCode}, middleware::{self, Next}, response::{Html, IntoResponse}, routing::get
 };
+use axum_server::tls_rustls::RustlsConfig;
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 
@@ -15,6 +16,14 @@ async fn main() {
     tracing_subscriber::fmt::init();
     let args = env::args().nth(1).expect("No Port given");
     let port = args.parse::<u16>().expect("Cannot parse given port");
+    
+    // Define where to find the certificate and private key used by https
+    let config: RustlsConfig = RustlsConfig::from_pem_file(
+        "cert.pem",
+        "key.pem"
+    )
+    .await
+    .unwrap();
 
     // Serve everything from the current directory (From the working directory you invoke the `server` binary from)
     let app = Router::new()
@@ -22,14 +31,13 @@ async fn main() {
         .route("/", get(index_handler))
         .layer(middleware::from_fn(add_wasm_headers));
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
-    tracing::info!("Listening on http://{}", addr);
-
-    let listener = tokio::net::TcpListener::bind(addr)
-        .await
-        .expect("Failed to bind to address");
-
-    axum::serve(listener, app).await.expect("Server error");
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    tracing::info!("Listening on https://{}", addr);
+    
+    axum_server::bind_rustls(addr, config)
+            .serve(app.into_make_service())
+            .await
+            .unwrap();
 }
 
 async fn add_wasm_headers(
